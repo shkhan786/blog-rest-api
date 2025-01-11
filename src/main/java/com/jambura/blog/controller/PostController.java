@@ -1,7 +1,10 @@
 package com.jambura.blog.controller;
 
 import com.jambura.blog.dto.PostDTO;
+import com.jambura.blog.dto.PostResponse;
 import com.jambura.blog.service.PostService;
+import com.jambura.blog.utils.AppConstants;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +22,12 @@ public class PostController {
         this.postService = postService;
     }
     @GetMapping
-    public ResponseEntity<List<PostDTO>> getAllPosts() {
-        return ResponseEntity.ok(postService.getAllPosts());
+    public ResponseEntity<PostResponse> getAllPosts(
+            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(value = "sortBy", required = false, defaultValue = AppConstants.DEFAULT_SORT_BY) String sortBy,
+            @RequestParam(value = "sortDir", required = false, defaultValue = AppConstants.DEFAULT_SORT_DIRECTION) String sortDirection) {
+        return ResponseEntity.ok(postService.getAllPosts(pageNumber, pageSize, sortBy, sortDirection));
     }
 
     @GetMapping("/{id}")
@@ -30,11 +37,17 @@ public class PostController {
 
 
     @PostMapping
-    public ResponseEntity<PostDTO> createPost(@RequestBody PostDTO postDTO) {
+    public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostDTO postDTO) {
         return new ResponseEntity<>(postService.createPost(postDTO), HttpStatus.CREATED);
     }
+
+    @PostMapping("/multiple")
+    public ResponseEntity<String> createMultiplePost(@RequestBody List<PostDTO> postDTOS) {
+        return new ResponseEntity<>(postService.createMultiplePost(postDTOS), HttpStatus.CREATED);
+    }
+
     @PutMapping("/{id}")
-    public ResponseEntity<PostDTO> updatePost(@RequestBody PostDTO postDTO, @PathVariable Long id) {
+    public ResponseEntity<PostDTO> updatePost(@Valid @RequestBody PostDTO postDTO, @PathVariable Long id) {
         return new ResponseEntity<>(postService.updatePost(id, postDTO), HttpStatus.OK);
     }
 
